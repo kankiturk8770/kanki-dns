@@ -1,0 +1,12 @@
+services:
+  dnsgate:
+    build: .
+    network_mode: host          # real client IPs + ports 53/80/443/853
+    restart: unless-stopped
+    environment:
+      DNSGATE_PUBLIC_IP: "203.0.113.10"   # your server's public IPv4
+    volumes:
+      - ./data:/data
+    working_dir: /data
+    command: ["/data/config.json"]
+    cap_add: [NET_BIND_SERVICE]

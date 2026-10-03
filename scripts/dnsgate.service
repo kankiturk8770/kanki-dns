@@ -1,0 +1,28 @@
+[Unit]
+Description=dnsgate SmartDNS + SNI relay
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=dnsgate
+Group=dnsgate
+WorkingDirectory=/var/lib/dnsgate
+ExecStart=/usr/local/bin/dnsgate /var/lib/dnsgate/config.json
+Restart=always
+RestartSec=2
+LimitNOFILE=262144
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+ReadWritePaths=/var/lib/dnsgate
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+MemoryDenyWriteExecute=false
+
+[Install]
+WantedBy=multi-user.target

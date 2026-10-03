@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>پنل DNS</title>
+<style>
+:root{--bg:#eef1f4;--ink:#14202b;--mut:#5b6b7a;--line:#cfd7de;--card:#fff;--acc:#1f5eff;--bad:#c62828;--ok:#1b7f4b;--warn:#b26a00;--side:#e2e8ee}
+@media(prefers-color-scheme:dark){:root{--bg:#10161c;--ink:#e6edf3;--mut:#8b9aa8;--line:#26323d;--card:#17202a;--acc:#6b9bff;--bad:#ff6b6b;--ok:#4cc38a;--warn:#e0a040;--side:#0c1116}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.7 ui-sans-serif,system-ui,Tahoma,sans-serif}
+#shell{display:grid;grid-template-columns:200px 1fr;min-height:100vh}
+nav{background:var(--side);border-inline-end:1px solid var(--line);padding:14px 10px;position:sticky;top:0;height:100vh;overflow:auto}
+nav b{display:block;padding:4px 10px 12px;font-size:16px}
+nav a{display:block;padding:7px 10px;border-radius:6px;color:var(--ink);text-decoration:none}
+nav a.on{background:var(--acc);color:#fff}
+nav a:focus-visible{outline:2px solid var(--acc)}
+main{padding:18px;min-width:0}
+h1{font-size:19px;margin:0 0 14px}h2{font-size:15px;margin:0 0 8px}
+.muted{color:var(--mut)}.err{color:var(--bad)}.ok{color:var(--ok)}.warn{color:var(--warn)}
+section,.box{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px;margin-bottom:14px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:10px 12px;border-inline-start:3px solid var(--acc)}
+.card b{display:block;font-size:20px;font-variant-numeric:tabular-nums}.card span{color:var(--mut);font-size:12px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.chart{width:100%;height:150px;color:var(--mut)}
+.legend span{margin-inline-end:12px;font-size:12px}.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-inline-end:4px}
+input,select,textarea,button{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 9px}
+textarea{width:100%;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px}
+input[type=text],input:not([type]),input[type=number],input[type=date],input[type=password],select{min-width:0}
+button{cursor:pointer}button.p{background:var(--acc);border-color:var(--acc);color:#fff}button.d{color:var(--bad)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}.row>.grow{flex:1;min-width:140px}
+.f{margin-bottom:10px}.f>label{display:block;color:var(--mut);font-size:12.5px;margin-bottom:2px}.f small{color:var(--mut)}
+.f input:not([type=checkbox]):not([type=radio]),.f select{width:100%}
+.tw{overflow-x:auto}table{width:100%;border-collapse:collapse}th,td{text-align:start;padding:6px 8px;border-top:1px solid var(--line);vertical-align:top}
+th{color:var(--mut);font-weight:500;border-top:0;white-space:nowrap}
+td.n,.ltr{direction:ltr;unicode-bidi:embed;text-align:left;font-variant-numeric:tabular-nums}
+.badge{display:inline-block;padding:0 8px;border-radius:10px;font-size:12px;border:1px solid var(--line)}
+.b-active,.b-cache,.b-direct,.b-static{color:var(--ok)}.b-proxy{color:var(--acc)}.b-block,.b-disabled,.b-expired,.b-over_quota,.b-refused,.b-servfail{color:var(--bad)}.b-stale{color:var(--warn)}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden;min-width:70px}.bar i{display:block;height:100%;background:var(--acc)}
+.sw{display:flex;align-items:center;gap:8px;padding:5px 0;border-top:1px solid var(--line)}.sw small{color:var(--mut)}
+dialog{border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);width:min(640px,94vw);max-height:90vh;padding:16px}
+dialog::backdrop{background:#0008}
+#toast{position:fixed;inset-inline-start:16px;bottom:16px;display:grid;gap:6px;z-index:9}
+#toast div{background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:6px}#toast .bad{background:var(--bad);color:#fff}
+pre{direction:ltr;text-align:left;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:8px;overflow:auto;font-size:12px;margin:6px 0}
+.live{max-height:68vh;overflow:auto}
+@media(max-width:820px){#shell{grid-template-columns:1fr}nav{position:static;height:auto;display:flex;gap:4px;overflow-x:auto;padding:8px}nav b{display:none}nav a{white-space:nowrap}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="shell"><nav id="nav" aria-label="منو"></nav><main id="main"></main></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<dialog id="dlg"></dialog>
+<script>
+'use strict';
+const B = location.pathname.replace(/\/$/, '') + '/api/v1';
+let CSRF = '', ME = {};
+const $ = (s, r = document) => r.querySelector(s);
+const PROPS = new Set(['value', 'checked', 'disabled', 'selected', 'textContent']);
+function h(tag, attrs = {}, ...kids) {
+  const e = document.createElement(tag), props = [];
+  for (const [k, v] of Object.entries(attrs)) {
+    if (v == null || v === false) continue;
+    if (k === 'class') e.className = v;
+    else if (k === 'style') e.style.cssText = v;
+    else if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
+    else if (PROPS.has(k)) props.push([k, v]);
+    else e.setAttribute(k, v === true ? '' : v);
+  }
+  e.append(...kids.flat(Infinity).filter(x => x != null && x !== false));
+  for (const [k, v] of props) e[k] = v;
+  return e;
+}
+async function api(path, method = 'GET', body) {
+  const r = await fetch(B + path, { method, credentials: 'same-origin', headers: { 'Content-Type': 'application/json', 'X-CSRF': CSRF }, body: body === undefined ? undefined : JSON.stringify(body) });
+  if (r.status === 401) { location.reload(); throw new Error('session expired'); }
+  if (!r.ok) { let m = 'HTTP ' + r.status; try { m = (await r.json()).error || m; } catch (_) {} throw new Error(m); }
+  return r.status === 204 ? null : r.json();
+}
+function toast(msg, bad) { const t = h('div', { class: bad ? 'bad' : '' }, msg); $('#toast').append(t); setTimeout(() => t.remove(), 3500); }
+const guard = fn => async (...a) => { try { await fn(...a); } catch (e) { toast(e.message, true); } };
+const num = n => Number(n || 0).toLocaleString('en');
+const bytes = n => { n = Number(n || 0); const u = ['B', 'KB', 'MB', 'GB', 'TB']; let i = 0; while (n >= 1024 && i < 4) { n /= 1024; i++; } return n.toFixed(i ? 2 : 0) + ' ' + u[i]; };
+const dur = s => { const d = Math.floor(s / 86400), hh = Math.floor(s % 86400 / 3600), mm = Math.floor(s % 3600 / 60); return (d ? d + 'd ' : '') + hh + 'h ' + mm + 'm'; };
+const tstr = t => new Date(t * 1000).toLocaleString('fa-IR');
+const dstr = t => t ? new Date(t * 1000).toISOString().slice(0, 10) : '';
+const QT = { 1: 'A', 2: 'NS', 5: 'CNAME', 6: 'SOA', 12: 'PTR', 15: 'MX', 16: 'TXT', 28: 'AAAA', 33: 'SRV', 64: 'SVCB', 65: 'HTTPS', 255: 'ANY' };
+const STATUS = { active: 'فعال', disabled: 'غیرفعال', expired: 'منقضی', over_quota: 'حجم تمام' };
+const lines = t => t.split('\n').map(x => x.trim()).filter(Boolean);
+const copy = async txt => { try { await navigator.clipboard.writeText(txt); toast('کپی شد'); } catch (_) { prompt('کپی کنید:', txt); } };
+const card = (l, v) => h('div', { class: 'card' }, h('b', {}, String(v)), h('span', {}, l));
+const badge = (cls, txt) => h('span', { class: 'badge b-' + cls }, txt);
+const field = (label, input, hint) => h('div', { class: 'f' }, h('label', {}, label), input, hint ? h('small', {}, hint) : null);
+const tbl = (head, rows) => h('div', { class: 'tw' }, h('table', {}, h('thead', {}, h('tr', {}, head.map(x => h('th', {}, x)))), h('tbody', {}, rows)));
+
+function modal(title, content, buttons = []) {
+  const d = $('#dlg');
+  d.replaceChildren(h('h2', {}, title), content, h('div', { class: 'row', style: 'margin-top:12px;justify-content:flex-end' }, ...buttons, h('button', { onclick: () => d.close() }, 'بستن')));
+  d.showModal();
+  return d;
+}
+
+function lineChart(series, w = 600, ht = 150) {
+  const ns = 'http://www.w3.org/2000/svg', n = Math.max(2, ...series.map(s => s.data.length));
+  const max = Math.max(1, ...series.flatMap(s => s.data));
+  const svg = document.createElementNS(ns, 'svg');
+  svg.setAttribute('viewBox', `0 0 ${w} ${ht}`); svg.setAttribute('class', 'chart'); svg.setAttribute('preserveAspectRatio', 'none');
+  for (const s of series) {
+    const d = s.data.map((v, i) => (i ? 'L' : 'M') + (i * w / (n - 1)).toFixed(1) + ' ' + (ht - 4 - v / max * (ht - 16)).toFixed(1)).join('');
+    const p = document.createElementNS(ns, 'path');
+    p.setAttribute('d', d); p.setAttribute('fill', 'none'); p.setAttribute('stroke', s.color); p.setAttribute('stroke-width', '2'); p.setAttribute('vector-effect', 'non-scaling-stroke');
+    svg.append(p);
+  }
+  const t = document.createElementNS(ns, 'text');
+  t.setAttribute('x', 4); t.setAttribute('y', 12); t.setAttribute('font-size', '11'); t.setAttribute('fill', 'currentColor'); t.textContent = 'max ' + max;
+  svg.append(t);
+  return svg;
+}
+const legend = items => h('div', { class: 'legend' }, items.map(([c, t]) => h('span', {}, h('i', { style: 'background:' + c }), t)));
+
+// ---------- router ----------
+const PAGES = {
+  dashboard: ['داشبورد', pDash], live: ['کوئری زنده', pLive], clients: ['کاربران', pClients], policies: ['پالیسی‌ها', pPolicies],
+  records: ['رکوردهای محلی', pRecords], upstreams: ['آپستریم و کش', pUp], settings: ['تنظیمات', pSettings],
+  tls: ['گواهی TLS', pTls], security: ['امنیت', pSec], system: ['پشتیبان و سیستم', pSys]
+};
+let timers = [], es = null;
+function stopAll() { timers.forEach(clearInterval); timers = []; if (es) { es.close(); es = null; } }
+async function route() {
+  stopAll();
+  const k = PAGES[(location.hash || '#dashboard').slice(1)] ? (location.hash || '#dashboard').slice(1) : 'dashboard';
+  $('#nav').replaceChildren(h('b', {}, 'DNS Gate'), ...Object.entries(PAGES).map(([id, [t]]) => h('a', { href: '#' + id, class: id === k ? 'on' : '' }, t)),
+    h('a', { href: '#', onclick: guard(async ev => { ev.preventDefault(); await api('/logout', 'POST'); location.reload(); }) }, 'خروج'));
+  const m = $('#main');
+  m.replaceChildren(h('div', { class: 'muted' }, '...'));
+  try { await PAGES[k][1](m); } catch (e) { m.replaceChildren(h('div', { class: 'err' }, 'خطا: ' + e.message)); }
+}
+
+// ---------- dashboard ----------
+async function pDash(m) {
+  const root = h('div');
+  m.replaceChildren(h('h1', {}, 'داشبورد'), root);
+  const topBox = (t, l) => h('div', { class: 'box' }, h('h2', {}, t), l.length ? tbl([], l.map(x => h('tr', {}, h('td', { class: 'ltr' }, x.key), h('td', { class: 'n' }, num(x.count))))) : h('div', { class: 'muted' }, 'داده‌ای نیست'));
+  async function load() {
+    const [o, s, t] = await Promise.all([api('/overview'), api('/series'), api('/top')]);
+    const st = o.stats, last = s[s.length - 1] || {}, tot = st.cache_hits + st.stale_hits + st.direct;
+    const col = ['#1f5eff', '#1b7f4b', '#b26a00', '#c62828'];
+    root.replaceChildren(
+      h('div', { class: 'cards' },
+        card('کوئری/ثانیه', last.q || 0), card('کل کوئری', num(st.queries)), card('نرخ کش', (tot ? Math.round(100 * (st.cache_hits + st.stale_hits) / tot) : 0) + '%'),
+        card('پروکسی', num(st.proxied)), card('مسدود', num(st.blocked)), card('ردشده', num(st.refused)), card('محدودشده', num(st.limited)),
+        card('خطای upstream', num(st.servfail)), card('رله فعال', st.relays_active), card('رله ردشده', num(st.relays_rejected)),
+        card('ترافیک ↑', bytes(st.bytes_up)), card('ترافیک ↓', bytes(st.bytes_down)), card('RAM', bytes(o.sys.rss || 0)), card('CPU', (last.cpu || 0) + '%'),
+        card('آپتایم', dur(o.uptime)), card('کاربران', o.clients.total), card('ورودی کش', num(o.cache_entries))),
+      h('div', { class: 'grid2' },
+        h('div', { class: 'box' }, h('h2', {}, 'کوئری در ثانیه (۱۰ دقیقه اخیر)'), lineChart([
+          { color: col[0], data: s.map(x => x.q) }, { color: col[1], data: s.map(x => x.hit) }, { color: col[2], data: s.map(x => x.proxy) }, { color: col[3], data: s.map(x => x.block + x.refused) }]),
+          legend([[col[0], 'کل'], [col[1], 'کش'], [col[2], 'پروکسی'], [col[3], 'مسدود/ردشده']])),
+        h('div', { class: 'box' }, h('h2', {}, 'اتصال‌های رله فعال'), lineChart([{ color: col[0], data: s.map(x => x.relays) }]),
+          h('div', { class: 'muted' }, 'load: ' + (o.sys.load ? o.sys.load.join(' / ') : '—') + ' · threads: ' + (o.sys.threads ?? '—')))),
+      h('div', { class: 'grid3' }, topBox('دامنه‌های پرتکرار', t.domains), topBox('کاربران فعال', t.clients), topBox('اکشن‌ها', t.actions)),
+      h('div', { class: 'box' }, h('h2', {}, 'سرویس‌ها'),
+        h('pre', {}, `DNS udp/tcp  ${o.listen.dns}\nDoT          ${o.listen.dot || 'off'}\nSNI relay    ${o.listen.relay}\nHTTP relay   ${o.listen.http_relay || 'off'}\nPanel/DoH    ${o.listen.web}\npublic ip    ${o.listen.public_ip}\nrules        proxy ${num(o.rules.proxied)} · block ${num(o.rules.blocked)} · records ${o.rules.records}\nTLS          ${o.tls.source} ${o.tls.names.join(', ')} ${o.tls.not_after ? 'expires ' + dstr(o.tls.not_after) : ''}\nmode         ${o.allow_all ? 'OPEN (allow_all)' : 'whitelist'}`)));
+  }
+  await load();
+  timers.push(setInterval(() => load().catch(() => {}), 3000));
+}
+
+// ---------- live log ----------
+async function pLive(m) {
+  let paused = false, rows = [];
+  const q = h('input', { placeholder: 'فیلتر دامنه/کاربر/اکشن', class: 'grow' }), body = h('tbody');
+  const pb = h('button', { onclick: () => { paused = !paused; pb.textContent = paused ? 'ادامه' : 'توقف'; } }, 'توقف');
+  const clr = h('button', { onclick: () => { rows = []; draw(); } }, 'پاک کردن');
+  m.replaceChildren(h('h1', {}, 'کوئری زنده'), h('div', { class: 'row' }, q, pb, clr), h('div', { class: 'box live' }, h('table', {}, h('thead', {}, h('tr', {}, ['زمان', 'کاربر', 'دامنه', 'نوع', 'اکشن', 'کد', 'ms'].map(x => h('th', {}, x)))), body)));
+  const row = e => h('tr', {}, h('td', { class: 'n' }, new Date(e.t).toLocaleTimeString('en-GB')), h('td', {}, e.client || h('span', { class: 'ltr' }, e.ip)), h('td', { class: 'ltr' }, e.name), h('td', {}, QT[e.qtype] || e.qtype), h('td', {}, badge(e.action, e.action)), h('td', {}, e.rcode), h('td', { class: 'n' }, (e.us / 1000).toFixed(1)));
+  const match = e => { const s = q.value.trim().toLowerCase(); return !s || (e.name + ' ' + e.action + ' ' + (e.client || '') + ' ' + e.ip).toLowerCase().includes(s); };
+  function draw() { body.replaceChildren(...rows.filter(match).slice(0, 400).map(row)); }
+  q.addEventListener('input', draw);
+  rows = await api('/logs?limit=300');
+  draw();
+  es = new EventSource(B + '/stream');
+  es.onmessage = ev => { if (paused) return; rows.unshift(JSON.parse(ev.data)); if (rows.length > 800) rows.length = 800; draw(); };
+}
+
+// ---------- clients ----------
+const portalUrl = c => location.origin + '/sub/' + c.token;
+const dohUrl = c => location.origin + '/dns-query/' + c.doh_token;
+function shareText(c, secret) {
+  return `${c.name}\nپورتال: ${portalUrl(c)}\nDNS: ${ME.public_ip}\nDoH: ${dohUrl(c)}` + (secret ? `\nرمز ثبت IP: ${secret}` : '');
+}
+function showShare(c, secret) {
+  const t = shareText(c, secret);
+  modal('اطلاعات اشتراک', h('div', {}, secret ? h('div', { class: 'warn' }, 'رمز ثبت IP فقط همین یک بار نمایش داده می‌شود.') : null, h('pre', {}, t)), [h('button', { class: 'p', onclick: () => copy(t) }, 'کپی')]);
+}
+async function clientForm(c) {
+  const pre = await api('/presets');
+  const v = c || { name: '', note: '', ips: [], max_ips: 1, enabled: true, expires_at: null, quota_bytes: 0, presets: null, custom_proxied: [], custom_blocked: [] };
+  const name = h('input', { value: v.name, maxlength: 64 }), note = h('input', { value: v.note }), en = h('input', { type: 'checkbox', checked: v.enabled });
+  const ips = h('textarea', { rows: 2, dir: 'ltr', value: v.ips.join('\n') }), max = h('input', { type: 'number', min: 1, max: 16, value: v.max_ips });
+  const exp = h('input', { type: 'date', value: dstr(v.expires_at) }), q = h('input', { type: 'number', min: 0, step: '0.1', value: +(v.quota_bytes / 1073741824).toFixed(3) });
+  const all = h('input', { type: 'radio', name: 'pm', checked: v.presets === null }), sel = h('input', { type: 'radio', name: 'pm', checked: v.presets !== null });
+  const boxes = pre.map(p => ({ p, cb: h('input', { type: 'checkbox', checked: v.presets ? v.presets.includes(p.name) : p.enabled }) }));
+  const cp = h('textarea', { rows: 2, dir: 'ltr', value: v.custom_proxied.join('\n') }), cb = h('textarea', { rows: 2, dir: 'ltr', value: v.custom_blocked.join('\n') });
+  const days = n => { exp.value = dstr(Math.floor(Date.now() / 1000) + n * 86400); };
+  const el = h('div', {},
+    h('div', { class: 'row' }, h('div', { class: 'grow' }, field('نام', name)), h('div', { class: 'grow' }, field('یادداشت', note)), h('label', {}, en, ' فعال')),
+    h('div', { class: 'row' }, h('div', { class: 'grow' }, field('IPها (هر خط یکی)', ips)), h('div', {}, field('حداکثر IP', max))),
+    h('div', { class: 'row' }, h('div', { class: 'grow' }, field('انقضا', exp, 'خالی = نامحدود')), h('button', { onclick: () => days(30) }, '+۳۰ روز'), h('button', { onclick: () => days(90) }, '+۹۰ روز'), h('button', { onclick: () => { exp.value = ''; } }, 'نامحدود'),
+      h('div', { class: 'grow' }, field('سقف حجم (GB)', q, '۰ = نامحدود'))),
+    h('div', { class: 'f' }, h('label', {}, 'پالیسی‌های این کاربر'), h('label', {}, all, ' همه پالیسی‌های فعال سراسری '), h('label', {}, sel, ' فقط انتخابی'),
+      h('div', { style: 'max-height:150px;overflow:auto;border:1px solid var(--line);border-radius:6px;padding:6px;margin-top:6px' }, boxes.map(({ p, cb }) => h('label', { style: 'display:block' }, cb, ' ' + p.title)))),
+    h('div', { class: 'row' }, h('div', { class: 'grow' }, field('دامنه‌های اضافه برای پروکسی', cp)), h('div', { class: 'grow' }, field('دامنه‌های مسدود', cb))));
+  const get = () => ({
+    name: name.value.trim(), note: note.value, enabled: en.checked, ips: lines(ips.value), max_ips: +max.value || 1,
+    expires_at: exp.value ? Math.floor(new Date(exp.value + 'T23:59:59').getTime() / 1000) : null, quota_bytes: Math.round((+q.value || 0) * 1073741824),
+    presets: sel.checked ? boxes.filter(x => x.cb.checked).map(x => x.p.name) : null, custom_proxied: lines(cp.value), custom_blocked: lines(cb.value)
+  });
+  return { el, get };
+}
+async function pClients(m) {
+  let list = [], text = '', stf = '';
+  const body = h('div'), s = h('input', { placeholder: 'جستجو نام/IP/یادداشت', class: 'grow' }), sf = h('select', {}, h('option', { value: '' }, 'همه وضعیت‌ها'), ...Object.entries(STATUS).map(([k, t]) => h('option', { value: k }, t)));
+  s.addEventListener('input', () => { text = s.value.trim().toLowerCase(); draw(); });
+  sf.addEventListener('change', () => { stf = sf.value; draw(); });
+  m.replaceChildren(h('h1', {}, 'کاربران'), h('div', { class: 'row' }, s, sf,
+    h('button', { class: 'p', onclick: guard(async () => { const f = await clientForm(); modal('کاربر جدید', f.el, [h('button', { class: 'p', onclick: guard(async () => { const r = await api('/clients', 'POST', f.get()); $('#dlg').close(); await load(); showShare(r.client, r.secret); }) }, 'ساخت')]); }) }, 'کاربر جدید'),
+    h('button', { onclick: () => { const ta = h('textarea', { rows: 8, dir: 'ltr', placeholder: '5.6.7.8 Ali\n9.9.9.9, Sara' }); modal('وارد کردن گروهی', h('div', {}, h('p', { class: 'muted' }, 'هر خط: یک IP و اختیاری نام.'), ta), [h('button', { class: 'p', onclick: guard(async () => { const r = await api('/clients/import', 'POST', { text: ta.value }); toast(r.added + ' کاربر اضافه شد'); $('#dlg').close(); load(); }) }, 'وارد کردن')]); } }, 'وارد کردن گروهی')), body);
+  async function load() { list = await api('/clients'); draw(); }
+  const act = (c, a, label) => guard(async () => { if (a === 'delete') { if (!confirm('حذف ' + c.name + '؟')) return; await api('/clients/' + c.id, 'DELETE'); } else { const r = await api('/clients/' + c.id + '/action', 'POST', { action: a }); if (r.secret) { await load(); showShare(list.find(x => x.id === c.id) || c, r.secret); return; } } toast(label); load(); });
+  function draw() {
+    const rows = list.filter(c => (!stf || c.status === stf) && (!text || (c.name + ' ' + c.note + ' ' + c.ips.join(' ')).toLowerCase().includes(text))).map(c => {
+      const u = c.usage.up + c.usage.down, pct = c.quota_bytes ? Math.min(100, u * 100 / c.quota_bytes) : 0;
+      const ops = h('select', { onchange: ev => { const v = ev.target.value; ev.target.value = ''; if (v) act(c, v, 'انجام شد')(); } }, h('option', { value: '' }, 'عملیات…'),
+        ...[[c.enabled ? 'suspend' : 'resume', c.enabled ? 'تعلیق' : 'فعال‌سازی'], ['regen_secret', 'رمز ثبت IP جدید'], ['regen_tokens', 'لینک/توکن جدید'], ['clear_ips', 'پاک کردن IPها'], ['reset_usage', 'صفر کردن مصرف'], ['delete', 'حذف']].map(([k, t]) => h('option', { value: k }, t)));
+      return h('tr', {}, h('td', {}, badge(c.status, STATUS[c.status])), h('td', {}, h('b', {}, c.name), c.note ? h('div', { class: 'muted' }, c.note) : null),
+        h('td', { class: 'ltr' }, c.ips.join(', ') || '—'),
+        h('td', {}, bytes(u) + (c.quota_bytes ? ' / ' + bytes(c.quota_bytes) : ''), c.quota_bytes ? h('div', { class: 'bar' }, h('i', { style: 'width:' + pct + '%' })) : null, h('div', { class: 'muted' }, num(c.usage.queries) + ' کوئری')),
+        h('td', {}, c.expires_at ? dstr(c.expires_at) : '∞'),
+        h('td', {}, h('div', { class: 'row', style: 'margin:0' },
+          h('button', { onclick: guard(async () => { const f = await clientForm(c); modal('ویرایش ' + c.name, f.el, [h('button', { class: 'p', onclick: guard(async () => { await api('/clients/' + c.id, 'PUT', f.get()); $('#dlg').close(); toast('ذخیره شد'); load(); }) }, 'ذخیره')]); }) }, 'ویرایش'),
+          h('button', { onclick: () => showShare(c) }, 'اطلاعات'), ops)));
+    });
+    body.replaceChildren(rows.length ? tbl(['وضعیت', 'نام', 'IPها', 'مصرف', 'انقضا', ''], rows) : h('div', { class: 'box muted' }, 'کاربری یافت نشد. با «کاربر جدید» شروع کنید؛ تا زمانی که IP ثبت نشده، هیچ‌کس پاسخ DNS نمی‌گیرد (حالت whitelist).'));
+  }
+  await load();
+}
+
+// ---------- policies ----------
+async function pPolicies(m) {
+  const root = h('div');
+  m.replaceChildren(h('h1', {}, 'پالیسی‌ها'), root);
+  async function load() {
+    const [pre, rules, cl] = await Promise.all([api('/presets'), api('/rules'), api('/clients')]);
+    const groups = {};
+    pre.forEach(p => (groups[p.group] = groups[p.group] || []).push(p));
+    const gname = { social: 'شبکه‌های اجتماعی', media: 'رسانه', google: 'گوگل', ai: 'هوش مصنوعی', dev: 'توسعه‌دهندگان', gaming: 'بازی', console: 'کنسول', bandwidth: 'حجم بالا', custom: 'سفارشی' };
+    const sw = p => h('div', { class: 'sw' }, h('input', { type: 'checkbox', checked: p.enabled, onchange: guard(async ev => { await api('/presets/' + p.name, 'PUT', { enabled: ev.target.checked }); toast('ذخیره شد'); }) }),
+      h('span', {}, p.title, ' ', h('small', {}, p.domains.length + ' دامنه')), h('span', { style: 'flex:1' }),
+      h('button', { onclick: () => modal(p.title, h('pre', {}, p.domains.join('\n'))) }, 'دامنه‌ها'),
+      p.builtin ? null : h('button', { onclick: () => customDlg(p) }, 'ویرایش'),
+      p.builtin ? null : h('button', { class: 'd', onclick: guard(async () => { if (confirm('حذف؟')) { await api('/presets/custom/' + p.name, 'DELETE'); load(); } }) }, 'حذف'));
+    function customDlg(p) {
+      const n = h('input', { value: p ? p.name : '', disabled: !!p, dir: 'ltr' }), t = h('input', { value: p ? p.title : '' }), d = h('textarea', { rows: 8, dir: 'ltr', value: p ? p.domains.join('\n') : '' }), on = h('input', { type: 'checkbox', checked: p ? p.default_on : true });
+      modal(p ? 'ویرایش گروه' : 'گروه جدید', h('div', {}, field('شناسه (a-z 0-9 _ -)', n), field('عنوان', t), field('دامنه‌ها (هر خط یکی؛ زیردامنه‌ها خودکار شامل می‌شوند)', d), h('label', {}, on, ' به‌صورت پیش‌فرض فعال')),
+        [h('button', { class: 'p', onclick: guard(async () => { await api('/presets/custom', 'POST', { name: n.value, title: t.value, domains: lines(d.value), default_on: on.checked }); $('#dlg').close(); load(); }) }, 'ذخیره')]);
+    }
+    const cp = h('textarea', { rows: 6, dir: 'ltr', value: rules.proxied.join('\n') }), cb = h('textarea', { rows: 6, dir: 'ltr', value: rules.blocked.join('\n') });
+    const impT = h('textarea', { rows: 5, dir: 'ltr', placeholder: '0.0.0.0 ads.example.com\ntracker.example.net' }), impK = h('select', {}, h('option', { value: 'blocked' }, 'مسدود'), h('option', { value: 'proxied' }, 'پروکسی'));
+    const tn = h('input', { dir: 'ltr', placeholder: 'discord.com', class: 'grow' }), tq = h('select', {}, ['A', 'AAAA', 'HTTPS', 'TXT', 'MX'].map(x => h('option', {}, x)));
+    const ips = [...new Set(cl.flatMap(c => c.ips))], ti = h('input', { dir: 'ltr', placeholder: 'IP کاربر', list: 'tips', value: ips[0] || '' }), tout = h('pre', { style: 'display:none' });
+    root.replaceChildren(
+      ...Object.entries(groups).map(([g, l]) => h('section', {}, h('h2', {}, gname[g] || g), l.map(sw))),
+      h('div', { class: 'row' }, h('button', { class: 'p', onclick: () => customDlg(null) }, 'گروه سفارشی جدید')),
+      h('section', {}, h('h2', {}, 'قوانین سراسری'), h('div', { class: 'grid2' }, field('همیشه پروکسی (هر خط یک دامنه)', cp), field('همیشه مسدود', cb)),
+        h('button', { class: 'p', onclick: guard(async () => { await api('/rules', 'PUT', { proxied: lines(cp.value), blocked: lines(cb.value) }); toast('ذخیره شد'); }) }, 'ذخیره قوانین')),
+      h('section', {}, h('h2', {}, 'وارد کردن لیست (hosts یا لیست دامنه)'), impT, h('div', { class: 'row', style: 'margin-top:8px' }, impK,
+        h('button', { onclick: guard(async () => { const r = await api('/rules/import', 'POST', { text: impT.value, target: impK.value }); toast(r.added + ' دامنه اضافه شد'); load(); }) }, 'افزودن'))),
+      h('section', {}, h('h2', {}, 'تست پالیسی'), h('datalist', { id: 'tips' }, ips.map(i => h('option', { value: i }))),
+        h('div', { class: 'row' }, tn, tq, ti, h('button', { class: 'p', onclick: guard(async () => { const r = await api('/test', 'POST', { name: tn.value, qtype: tq.value, ip: ti.value }); tout.style.display = 'block'; tout.textContent = JSON.stringify(r, null, 2); }) }, 'بررسی')), tout));
+  }
+  await load();
+}
+
+// ---------- records ----------
+async function pRecords(m) {
+  let recs = await api('/records');
+  const body = h('tbody');
+  function draw() {
+    body.replaceChildren(...recs.map((r, i) => h('tr', {},
+      h('td', {}, h('input', { value: r.name, dir: 'ltr', onchange: ev => { r.name = ev.target.value; } })),
+      h('td', {}, h('select', { value: r.rtype, onchange: ev => { r.rtype = ev.target.value; } }, ['A', 'AAAA', 'CNAME', 'TXT'].map(x => h('option', { value: x }, x)))),
+      h('td', {}, h('input', { value: r.value, dir: 'ltr', onchange: ev => { r.value = ev.target.value; } })),
+      h('td', {}, h('input', { type: 'number', value: r.ttl, min: 1, style: 'width:80px', onchange: ev => { r.ttl = +ev.target.value; } })),
+      h('td', {}, h('button', { class: 'd', onclick: () => { recs.splice(i, 1); draw(); } }, 'حذف')))));
+  }
+  m.replaceChildren(h('h1', {}, 'رکوردهای محلی'), h('p', { class: 'muted' }, 'پاسخ مستقیم و بدون آپستریم برای دامنه‌های داخلی/سفارشی (Split-horizon). این رکوردها بر پالیسی‌ها اولویت دارند.'),
+    h('div', { class: 'box' }, h('div', { class: 'tw' }, h('table', {}, h('thead', {}, h('tr', {}, ['نام', 'نوع', 'مقدار', 'TTL', ''].map(x => h('th', {}, x)))), body)),
+      h('div', { class: 'row', style: 'margin-top:10px' }, h('button', { onclick: () => { recs.push({ name: '', rtype: 'A', value: '', ttl: 300 }); draw(); } }, 'رکورد جدید'),
+        h('button', { class: 'p', onclick: guard(async () => { await api('/records', 'PUT', recs); toast('ذخیره شد'); recs = await api('/records'); draw(); }) }, 'ذخیره'))));
+  draw();
+}
+
+// ---------- upstreams & cache ----------
+async function pUp(m) {
+  const s = await api('/settings');
+  const ta = h('textarea', { rows: 4, dir: 'ltr', value: s.upstreams.join('\n') }), out = h('div');
+  async function stats() {
+    const [u, c] = await Promise.all([api('/upstreams'), api('/cache')]);
+    out.replaceChildren(h('h2', {}, 'آمار آپستریم‌ها'), tbl(['آدرس', 'برد', 'timeout', 'RTT میانگین'], u.map(x => h('tr', {}, h('td', { class: 'ltr' }, x.addr), h('td', { class: 'n' }, num(x.wins)), h('td', { class: 'n' }, num(x.timeouts)), h('td', { class: 'n' }, x.rtt_ms ? x.rtt_ms.toFixed(1) + ' ms' : '—')))),
+      h('p', { class: 'muted' }, `کش: ${num(c.entries)} / ${num(c.capacity)} ورودی · hit ${num(c.hits)} · stale ${num(c.stale_hits)} · miss ${num(c.misses)}`));
+  }
+  const bres = h('div');
+  m.replaceChildren(h('h1', {}, 'آپستریم و کش'),
+    h('section', {}, h('h2', {}, 'آپستریم‌ها (ip:port، حداکثر ۸)'), h('p', { class: 'muted' }, 'همه آپستریم‌ها هم‌زمان پرسیده می‌شوند و سریع‌ترین پاسخ برنده است.'), ta,
+      h('div', { class: 'row', style: 'margin-top:8px' }, h('button', { class: 'p', onclick: guard(async () => { s.upstreams = lines(ta.value); await api('/settings', 'PUT', s); toast('ذخیره شد'); stats(); }) }, 'ذخیره'),
+        h('button', { onclick: guard(async () => { bres.textContent = 'در حال تست…'; const r = await api('/upstreams/benchmark', 'POST'); bres.replaceChildren(tbl(['آدرس', 'میانه', 'بهترین', 'از دست رفته'], r.map(x => h('tr', {}, h('td', { class: 'ltr' }, x.addr), h('td', { class: 'n' }, x.median_ms != null ? x.median_ms.toFixed(1) + ' ms' : '—'), h('td', { class: 'n' }, x.best_ms != null ? x.best_ms.toFixed(1) + ' ms' : '—'), h('td', { class: 'n' }, x.lost + '/' + x.sent))))); }) }, 'بنچمارک تاخیر')), bres),
+    h('section', {}, out, h('div', { class: 'row' }, h('button', { class: 'd', onclick: guard(async () => { await api('/cache/flush', 'POST'); toast('کش خالی شد'); stats(); }) }, 'خالی کردن کش'))));
+  await stats();
+  timers.push(setInterval(() => stats().catch(() => {}), 5000));
+}
+
+// ---------- settings ----------
+const SCHEMA = [
+  ['دسترسی', [['allow_all', 'bool', 'اجازه به همه (open resolver)', 'خطرناک: هر IP می‌تواند از سرور شما استفاده کند. پیشنهاد: خاموش.'], ['trust_forwarded', 'bool', 'اعتماد به X-Forwarded-For (پشت reverse proxy)']]],
+  ['کش DNS', [['cache_enabled', 'bool', 'کش فعال'], ['cache_min_ttl', 'int', 'حداقل TTL (ثانیه)'], ['cache_max_ttl', 'int', 'حداکثر TTL (ثانیه)'], ['serve_stale_secs', 'int', 'ارائه پاسخ کهنه در خطا (ثانیه)', 'پاسخ منقضی تا این مدت سریع داده می‌شود و پشت‌صحنه تازه می‌شود.'], ['prefetch', 'bool', 'پیش‌واکشی قبل از انقضا']]],
+  ['DNS', [['query_timeout_ms', 'int', 'timeout آپستریم (ms)'], ['proxy_ttl', 'int', 'TTL پاسخ پروکسی (ثانیه)'], ['rate_qps', 'int', 'سقف کوئری/ثانیه برای هر IP (۰ = بدون سقف)'], ['rate_burst', 'int', 'burst مجاز'], ['query_log', 'bool', 'ثبت کوئری‌ها در حافظه (لاگ زنده)']]],
+  ['رله', [['relay_idle_secs', 'int', 'قطع اتصال بیکار بعد از (ثانیه)'], ['relay_connect_ms', 'int', 'timeout اتصال به مقصد (ms)'], ['fragment_size', 'int', 'اندازه قطعه اول ClientHello (۰ = خاموش)', 'برای عبور از DPI؛ مثلا ۱۰۰. مقدار ۰ غیرفعال است.'], ['fragment_delay_ms', 'int', 'تاخیر بین قطعه‌ها (ms)'], ['block_private_targets', 'bool', 'جلوگیری از رله به IPهای خصوصی (SSRF)']]],
+  ['پورتال کاربران', [['portal_title', 'text', 'عنوان صفحه'], ['portal_domain', 'text', 'دامنه/IP نمایش‌داده‌شده برای DNS و DoH', 'خالی = IP عمومی سرور'], ['traffic_reset_day', 'int', 'روز ماه برای صفر شدن مصرف (۰ = هرگز، ۱..۲۸)']]],
+  ['ورود به پنل', [['session_idle_min', 'int', 'خروج خودکار بعد از بی‌فعالیتی (دقیقه)'], ['login_max_fails', 'int', 'تلاش ناموفق مجاز قبل از قفل'], ['login_lock_min', 'int', 'مدت قفل (دقیقه)']]]
+];
+async function pSettings(m) {
+  const s = await api('/settings'), inputs = {};
+  const secs = SCHEMA.map(([t, fs]) => h('section', {}, h('h2', {}, t), fs.map(([k, type, label, hint]) => {
+    const i = type === 'bool' ? h('input', { type: 'checkbox', checked: s[k] }) : h('input', { type: type === 'int' ? 'number' : 'text', value: s[k] });
+    inputs[k] = [type, i];
+    return type === 'bool' ? h('div', { class: 'f' }, h('label', { style: 'color:var(--ink)' }, i, ' ' + label), hint ? h('small', {}, hint) : null) : field(label, i, hint);
+  })));
+  m.replaceChildren(h('h1', {}, 'تنظیمات'), ...secs, h('button', { class: 'p', onclick: guard(async () => {
+    for (const [k, [type, i]] of Object.entries(inputs)) s[k] = type === 'bool' ? i.checked : type === 'int' ? +i.value : i.value;
+    await api('/settings', 'PUT', s); toast('ذخیره و اعمال شد');
+  }) }, 'ذخیره همه'), h('p', { class: 'muted' }, 'تغییر پورت‌ها و آدرس‌های listen از config.json انجام می‌شود و نیاز به ری‌استارت دارد.'));
+}
+
+// ---------- TLS ----------
+async function pTls(m) {
+  const t = await api('/tls'), i = t.info;
+  const cert = h('textarea', { rows: 7, dir: 'ltr', placeholder: '-----BEGIN CERTIFICATE-----' }), key = h('textarea', { rows: 5, dir: 'ltr', placeholder: '-----BEGIN PRIVATE KEY-----' }), names = h('input', { dir: 'ltr', placeholder: 'dns.example.com, 1.2.3.4' });
+  const left = i.not_after ? Math.floor((i.not_after - Date.now() / 1000) / 86400) : null;
+  m.replaceChildren(h('h1', {}, 'گواهی TLS'),
+    h('section', {}, h('h2', {}, 'گواهی فعلی'), h('pre', {}, `source   ${i.source}\nsubject  ${i.subject}\nnames    ${i.names.join(', ')}\nexpires  ${i.not_after ? dstr(i.not_after) + ' (' + left + ' روز)' : '—'}`),
+      left !== null && left < 14 ? h('div', { class: 'warn' }, 'گواهی به‌زودی منقضی می‌شود.') : null,
+      h('p', { class: 'muted' }, 'همین گواهی برای پنل، DoH (' + (t.web_tls ? 'فعال' : 'خاموش') + ') و DoT (' + (t.dot || 'خاموش') + ') استفاده می‌شود. جایگزینی بدون ری‌استارت اعمال می‌شود.')),
+    h('section', {}, h('h2', {}, 'آپلود گواهی معتبر (مثلا از certbot / acme.sh)'), field('Certificate (PEM, fullchain)', cert), field('Private key (PEM)', key),
+      h('button', { class: 'p', onclick: guard(async () => { await api('/tls', 'PUT', { cert: cert.value, key: key.value }); toast('اعمال شد'); route(); }) }, 'نصب گواهی'),
+      h('p', { class: 'muted' }, 'برای تمدید خودکار، در hook تمدید certbot همین API را با کلید API صدا بزنید: PUT /api/v1/tls با Bearer.')),
+    h('section', {}, h('h2', {}, 'ساخت گواهی self-signed'), field('نام‌ها (با کاما)', names, 'مرورگرها هشدار می‌دهند؛ برای DoT/DoH روی موبایل گواهی معتبر لازم است.'),
+      h('button', { onclick: guard(async () => { await api('/tls/selfsigned', 'POST', { names: names.value.split(',').map(x => x.trim()).filter(Boolean) }); toast('ساخته شد'); route(); }) }, 'ساخت')));
+}
+
+// ---------- security ----------
+async function pSec(m) {
+  const [ses, lk, au] = await Promise.all([api('/sessions'), api('/lockouts'), api('/audit')]);
+  const cur = h('input', { type: 'password', autocomplete: 'current-password' }), nw = h('input', { type: 'password', autocomplete: 'new-password' });
+  const totpBox = h('div');
+  function totpUi() {
+    if (ME.totp) {
+      const pw = h('input', { type: 'password' }), cd = h('input', { maxlength: 6, inputmode: 'numeric' });
+      totpBox.replaceChildren(h('p', { class: 'ok' }, 'احراز هویت دو مرحله‌ای فعال است.'), h('div', { class: 'row' }, h('div', {}, field('رمز عبور', pw)), h('div', {}, field('کد فعلی', cd))),
+        h('button', { class: 'd', onclick: guard(async () => { await api('/2fa/disable', 'POST', { password: pw.value, code: cd.value }); ME.totp = false; toast('غیرفعال شد'); totpUi(); }) }, 'غیرفعال‌سازی'));
+    } else {
+      totpBox.replaceChildren(h('button', { onclick: guard(async () => {
+        const r = await api('/2fa/setup', 'POST'), cd = h('input', { maxlength: 6, inputmode: 'numeric', placeholder: 'کد ۶ رقمی' });
+        totpBox.replaceChildren(h('p', {}, 'این کلید را در Google Authenticator / Aegis / 1Password وارد کنید:'), h('pre', {}, r.secret), h('pre', {}, r.uri), h('div', { class: 'row' }, cd,
+          h('button', { class: 'p', onclick: guard(async () => { await api('/2fa/enable', 'POST', { code: cd.value }); ME.totp = true; toast('فعال شد'); totpUi(); }) }, 'تایید و فعال‌سازی')));
+      }) }, 'فعال‌سازی 2FA'));
+    }
+  }
+  m.replaceChildren(h('h1', {}, 'امنیت'),
+    h('section', {}, h('h2', {}, 'تغییر رمز عبور'), h('div', { class: 'grid2' }, field('رمز فعلی', cur), field('رمز جدید (حداقل ۱۰ حرف)', nw)),
+      h('button', { class: 'p', onclick: guard(async () => { await api('/password', 'POST', { current: cur.value, new: nw.value }); cur.value = nw.value = ''; toast('رمز تغییر کرد؛ سایر نشست‌ها بسته شدند'); }) }, 'تغییر رمز')),
+    h('section', {}, h('h2', {}, 'احراز هویت دو مرحله‌ای (TOTP)'), totpBox),
+    h('section', {}, h('h2', {}, 'کلید API'), h('p', { class: 'muted' }, 'برای اتوماسیون (Authorization: Bearer ...). کلید قبلی بلافاصله باطل می‌شود و کلید جدید فقط یک بار نمایش داده می‌شود.'),
+      h('button', { onclick: guard(async () => { if (!confirm('کلید فعلی باطل شود؟')) return; const r = await api('/apikey/rotate', 'POST'); modal('کلید API جدید', h('pre', {}, r.api_key), [h('button', { class: 'p', onclick: () => copy(r.api_key) }, 'کپی')]); }) }, 'ساخت کلید جدید')),
+    h('section', {}, h('h2', {}, 'نشست‌های فعال'), tbl(['IP', 'مرورگر', 'آخرین فعالیت', ''], ses.map(s => h('tr', {}, h('td', { class: 'ltr' }, s.ip), h('td', { class: 'ltr' }, s.ua), h('td', {}, tstr(s.last)), h('td', {}, s.current ? badge('active', 'این نشست') : h('button', { class: 'd', onclick: guard(async () => { await api('/sessions/' + s.id, 'DELETE'); route(); }) }, 'بستن'))))),
+      h('div', { class: 'row', style: 'margin-top:8px' }, h('button', { class: 'd', onclick: guard(async () => { await api('/sessions/revoke-others', 'POST'); route(); }) }, 'بستن سایر نشست‌ها'))),
+    h('section', {}, h('h2', {}, 'IPهای قفل‌شده'), lk.length ? tbl(['IP', 'تلاش', 'زمان باقی‌مانده'], lk.map(l => h('tr', {}, h('td', { class: 'ltr' }, l.ip), h('td', {}, l.fails), h('td', {}, Math.ceil(l.retry_secs / 60) + ' دقیقه')))) : h('div', { class: 'muted' }, 'موردی نیست'),
+      lk.length ? h('button', { onclick: guard(async () => { await api('/lockouts/clear', 'POST'); route(); }) }, 'آزاد کردن همه') : null),
+    h('section', {}, h('h2', {}, 'گزارش رویدادها'), tbl(['زمان', 'IP', 'رویداد', 'جزئیات'], au.slice(0, 200).map(a => h('tr', {}, h('td', {}, tstr(a.t)), h('td', { class: 'ltr' }, a.ip), h('td', { class: 'ltr' }, a.action), h('td', { class: 'ltr' }, a.detail))))));
+  totpUi();
+}
+
+// ---------- system ----------
+async function pSys(m) {
+  const o = await api('/overview'), f = h('input', { type: 'file', accept: 'application/json' });
+  m.replaceChildren(h('h1', {}, 'پشتیبان و سیستم'),
+    h('section', {}, h('h2', {}, 'پشتیبان‌گیری'), h('p', { class: 'muted' }, 'شامل کاربران، پالیسی‌ها، رکوردها و تنظیمات. رمز عبور و کلید API در فایل پشتیبان نیستند.'),
+      h('div', { class: 'row' }, h('button', { class: 'p', onclick: guard(async () => { const r = await fetch(B + '/backup', { credentials: 'same-origin' }); if (!r.ok) throw new Error('HTTP ' + r.status); const a = h('a', { href: URL.createObjectURL(await r.blob()), download: 'dnsgate-backup-' + new Date().toISOString().slice(0, 10) + '.json' }); a.click(); }) }, 'دانلود پشتیبان')),
+      h('div', { class: 'row' }, f, h('button', { class: 'd', onclick: guard(async () => { if (!f.files[0] || !confirm('همه تنظیمات فعلی جایگزین شود؟')) return; await api('/restore', 'POST', JSON.parse(await f.files[0].text())); toast('بازیابی شد'); route(); }) }, 'بازیابی'))),
+    h('section', {}, h('h2', {}, 'اطلاعات'), h('pre', {}, `version  ${o.version}\nuptime   ${dur(o.uptime)}\nmemory   ${bytes(o.sys.rss || 0)} / ${bytes(o.sys.mem_total || 0)}\nclients  ${o.clients.total}\nadmin    /${ME.admin_path}\nyour ip  ${ME.ip}`)));
+}
+
+(async () => {
+  try { ME = await api('/me'); CSRF = ME.csrf; } catch (e) { return; }
+  window.addEventListener('hashchange', route);
+  route();
+})();
+</script>
+</body>
+</html>

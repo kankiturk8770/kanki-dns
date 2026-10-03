@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>ورود</title>
+<style>
+:root{--bg:#eef1f4;--ink:#14202b;--mut:#5b6b7a;--line:#cfd7de;--card:#fff;--acc:#1f5eff;--bad:#c62828}
+@media(prefers-color-scheme:dark){:root{--bg:#10161c;--ink:#e6edf3;--mut:#8b9aa8;--line:#26323d;--card:#17202a;--acc:#6b9bff;--bad:#ff6b6b}}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:grid;place-items:center;background:var(--bg);color:var(--ink);font:15px/1.7 ui-sans-serif,system-ui,Tahoma,sans-serif}
+form{width:min(360px,92vw);background:var(--card);border:1px solid var(--line);border-radius:8px;padding:20px}
+h1{font-size:18px;margin:0 0 14px}
+label{display:block;color:var(--mut);font-size:13px;margin-top:10px}
+input,button{width:100%;font:inherit;padding:9px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink)}
+button{margin-top:14px;background:var(--acc);border-color:var(--acc);color:#fff;cursor:pointer}
+input:focus-visible,button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+#e{color:var(--bad);min-height:1.6em;margin-top:8px}
+#t{display:none}
+</style>
+</head>
+<body>
+<form id="f" autocomplete="off">
+  <h1>ورود به پنل مدیریت</h1>
+  <label for="p">رمز عبور</label>
+  <input id="p" type="password" required autofocus>
+  <div id="t"><label for="c">کد دو مرحله‌ای</label><input id="c" inputmode="numeric" maxlength="6" placeholder="۶ رقم"></div>
+  <button type="submit">ورود</button>
+  <div id="e" role="alert"></div>
+</form>
+<script>
+const $=id=>document.getElementById(id);
+const base=location.pathname.replace(/\/$/,'');
+$('f').onsubmit=async ev=>{
+  ev.preventDefault();$('e').textContent='';
+  try{
+    const r=await fetch(base+'/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:$('p').value,code:$('c').value})});
+    const j=await r.json().catch(()=>({}));
+    if(r.ok){location.reload();return}
+    if(j.need_totp){$('t').style.display='block';$('c').focus();$('e').textContent='کد برنامه احراز هویت را وارد کنید.';return}
+    if(j.error==='locked'){$('e').textContent='این آدرس موقتا قفل شده؛ '+Math.ceil(j.retry_secs/60)+' دقیقه بعد تلاش کنید.';return}
+    $('e').textContent='رمز یا کد نادرست است.';
+  }catch(e){$('e').textContent='خطای شبکه.'}
+};
+</script>
+</body>
+</html>
